@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\Users\\\\Cspin\\\\Documents\\\\GitHub\\\\RokidGames\")",
+      "Bash(cmd /c \"dir c:\\\\Users\\\\Cspin\\\\Documents\\\\GitHub\\\\RokidGames /a\")",
+      "WebFetch(domain:ar.rokid.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -fsSL \"https://raw.githubusercontent.com/KUPdriveouter/RokidAppMaker/main/TouchMouse/app/src/main/AndroidManifest.xml\")",
+      "Bash(curl -fsSL \"https://api.github.com/repos/KUPdriveouter/RokidAppMaker/contents/TouchMouse/app/src/main/java\")"
+    ]
+  }
+}
