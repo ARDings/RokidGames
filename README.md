@@ -1,5 +1,7 @@
 # Game Collection
 
+https://www.linkedin.com/feed/update/urn:li:activity:7458215418005155841/
+
 A tiny retro-style game collection for the **Rokid Glasses** (RV101 — see-through AI glasses with binocular Micro-LED waveguide displays). Five mini-games rendered as monochrome green pixel art, controlled by the temple touchpad and head movement.
 
 > 📦 Single APK, no Rokid SDK dependency. Just plain Android. `minSdk = 32`.
