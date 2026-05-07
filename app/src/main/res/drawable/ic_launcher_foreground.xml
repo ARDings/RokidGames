@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    3.5"-Diskette als Pixel-Art-Logo.
+    Adaptive Icon Foreground — viewport 108x108, sicherer Bereich 66x66 in der Mitte.
+    Alles in Grünstufen, passt zum Look der Spiele.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Diskettenkörper mit angeschnittener Ecke oben rechts -->
+    <path
+        android:fillColor="#00BB00"
+        android:pathData="M22,28 L76,28 L84,36 L84,86 L22,86 Z" />
+
+    <!-- Outline (helleres Grün für Pop) -->
+    <path
+        android:strokeColor="#00FF00"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000"
+        android:pathData="M22,28 L76,28 L84,36 L84,86 L22,86 Z" />
+
+    <!-- Metall-Shutter oben (dimmer) -->
+    <path
+        android:fillColor="#005A00"
+        android:pathData="M30,34 L80,34 L80,48 L30,48 Z" />
+    <!-- Schlitz / Slider-Notch -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M64,37 L74,37 L74,45 L64,45 Z" />
+
+    <!-- Label-Bereich (heller — wie das Papierlabel auf einer echten Diskette) -->
+    <path
+        android:fillColor="#88FF88"
+        android:pathData="M28,54 L78,54 L78,80 L28,80 Z" />
+    <!-- Drei Beschriftungs-Linien auf dem Label -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M32,60 L74,60 L74,62 L32,62 Z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M32,66 L74,66 L74,68 L32,68 Z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M32,72 L62,72 L62,74 L32,74 Z" />
+
+</vector>
