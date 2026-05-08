@@ -280,8 +280,8 @@ class GameHostView(ctx: Context) : View(ctx) {
     // Drawing helpers
     // =====================================================================
     private fun drawGreeting() {
-        val msg1 = "HALLO"
-        val msg2 = "CHRISTOPH"
+        val msg1 = "HELLO"
+        val msg2 = "HUMAN!"
         val w1 = textBig.measureText(msg1)
         val w2 = textBig.measureText(msg2)
         pixelCanvas.drawText(msg1, (srcW - w1) / 2f, srcH / 2f - 4f, textBig)

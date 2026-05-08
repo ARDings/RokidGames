@@ -26,8 +26,12 @@ internal class SnakeGame(
         fun isOpposite(o: Dir) = dx == -o.dx && dy == -o.dy
     }
 
-    private val cols = srcW / CELL                  // 16
-    private val rows = (srcH - HUD_H) / CELL        // 22
+    // Spielfeld bekommt zusätzlich 5 % Vertical-Padding oben + unten — sonst klebt
+    // die Schlange zu nah an den schwer sichtbaren Brillen-Rändern.
+    private val playTop    = HUD_H + (srcH * 0.05f).toInt()    // 10 + 6 = 16
+    private val playBottom = srcH - (srcH * 0.05f).toInt()      // 120 - 6 = 114
+    private val cols = srcW / CELL                              // 16
+    private val rows = (playBottom - playTop) / CELL            // 19
 
     // body: head ist letztes Element, tail erstes
     private val body = ArrayDeque<IntArray>()
@@ -133,11 +137,12 @@ internal class SnakeGame(
         }
 
         // Spielfeld-Rahmen (1 px ringsum, dim)
-        val top = HUD_H.toFloat()
+        val top = playTop.toFloat()
+        val bot = playBottom.toFloat()
         canvas.drawRect(0f, top - 1f, srcW.toFloat(), top, pxDim)
-        canvas.drawRect(0f, srcH - 1f, srcW.toFloat(), srcH.toFloat(), pxDim)
-        canvas.drawRect(0f, top, 1f, srcH.toFloat(), pxDim)
-        canvas.drawRect(srcW - 1f, top, srcW.toFloat(), srcH.toFloat(), pxDim)
+        canvas.drawRect(0f, bot, srcW.toFloat(), bot + 1f, pxDim)
+        canvas.drawRect(0f, top, 1f, bot, pxDim)
+        canvas.drawRect(srcW - 1f, top, srcW.toFloat(), bot, pxDim)
 
         // Snake
         for (c in body) {
