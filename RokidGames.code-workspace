@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "RokidGames",
+			"path": "."
+		},
+		{
+			"name": "reactive-volcano-app",
+			"path": "../reactive-volcano-app"
+		}
+	],
+	"settings": {}
+}

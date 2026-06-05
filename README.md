@@ -17,6 +17,7 @@ A tiny retro-style game collection for the **Rokid Glasses** (RV101 — see-thro
 | **Asteroid**| Dodge asteroids flying out of a 3D wireframe tunnel.              | Head yaw/pitch moves the ship; swipes nudge the head bias   |
 | **3D Pong** | Real 3DOF pong inside a world-anchored box; CPU opponent at the back.| Head movement aims the view-locked paddle                |
 | **3DOF**    | Demo: a wireframe cube that stays put in space while you turn your head. | Tap = re-anchor                                       |
+| **Dino**    | Endless runner — jump over cacti, speed increases with distance.    | Tap = jump, double-tap = back to menu                    |
 
 All games render to a low-res 80 × 120 pixel bitmap, then upscaled (nearest-neighbor) to the full display — gives you crisp pixel art that suits the monochrome green Micro-LED panel. Synth-generated sound effects on every meaningful event (no audio assets in the APK).
 
@@ -48,6 +49,7 @@ The Rokid Sprite-Launcher translates the temple-touchpad gestures into standard 
 | Asteroid | –         | –         | nudge right¹  | nudge left¹    | re-center           | back       |
 | 3D Pong  | –         | –         | –             | –              | re-anchor           | back       |
 | 3DOF     | –         | –         | –             | –              | re-anchor           | back       |
+| Dino     | –         | –         | –             | –              | jump                | back       |
 
 ¹ Asteroid swipes are inverted on purpose — it feels right that "swipe in the direction you want the ship to go" works opposite to how the head would tilt.
 
@@ -64,7 +66,8 @@ app/src/main/java/com/rokidgames/headpong/
 ├── SnakeGame.kt           Snake with turn-relative steering
 ├── AsteroidGame.kt        3D wireframe-tunnel asteroid dodger
 ├── ThreePongGame.kt       3DOF-anchored pong with CPU opponent
-└── ThreeDofGame.kt        World-anchored cube demo
+├── ThreeDofGame.kt        World-anchored cube demo
+└── DinoGame.kt            Chrome Dino-style endless runner
 ```
 
 Each game implements `init()` / `update(dt, ...)` / `draw(canvas, best)` and exposes `score` + `gameOver`. The host owns the phase state machine, the pixel bitmap, the rendering paints, and per-game best-scores.

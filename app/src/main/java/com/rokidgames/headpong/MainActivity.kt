@@ -1,58 +1,55 @@
 package com.rokidgames.headpong
 
+import android.Manifest
 import android.app.Activity
-import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 /**
- * Hostet die GameHostView und reicht zwei Eingabe-Pfade an sie weiter:
+ * Venty BLE HUD — single-activity host.
  *
- *   1. **Touchpad** (rechter Bügel) — Sprite übersetzt Gesten in KeyEvents.
- *      Mapping ist 4-Richtungs-explizit, damit jede Phase eindeutig reagiert:
- *
- *        Swipe ↑   → KEYCODE_DPAD_UP    → onUp()      (Menu: vorherige Auswahl)
- *        Swipe ↓   → KEYCODE_DPAD_DOWN  → onDown()    (Menu: nächste Auswahl)
- *        Swipe ←   → KEYCODE_DPAD_LEFT  → onLeft()    (Snake: turn-left, Asteroid: bias-left)
- *        Swipe →   → KEYCODE_DPAD_RIGHT → onRight()   (Snake: turn-right, Asteroid: bias-right)
- *        Tap       → KEYCODE_DPAD_CENTER/ENTER → onPrimary()  (start, recenter)
- *        Doppel    → KEYCODE_BACK              → onBack()     (zurück ins Menü)
- *
- *   2. **IMU** — TYPE_GAME_ROTATION_VECTOR. Yaw + Pitch werden live an die View
- *      gepushed; Jumper nutzt nur Yaw, Asteroid nutzt beide.
+ * Input:
+ *   Swipe UP/DOWN → temp ±1°C
+ *   Tap           → toggle heater
+ *   Double-tap    → reconnect BLE
  */
-class MainActivity : Activity(), SensorEventListener {
+class MainActivity : Activity() {
 
     private lateinit var view: GameHostView
-    private lateinit var sm: SensorManager
 
-    private val mat = FloatArray(9)
-    private val rot = FloatArray(3)
+    companion object {
+        private const val REQ_BLE = 42
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Display nicht in Standby gehen lassen, solange wir im Vordergrund sind.
-        // Greift automatisch nur bei sichtbarer Activity, kein Wakelock-Permission nötig.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         view = GameHostView(this)
         setContentView(view)
-        sm = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        requestBlePermissions()
     }
 
-    override fun onResume() {
-        super.onResume()
-        sm.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
-            ?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
-    }
-
-    override fun onPause() {
-        sm.unregisterListener(this)
-        super.onPause()
+    private fun requestBlePermissions() {
+        val missing = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
+            != PackageManager.PERMISSION_GRANTED)
+            missing += Manifest.permission.BLUETOOTH_SCAN
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+            != PackageManager.PERMISSION_GRANTED)
+            missing += Manifest.permission.BLUETOOTH_CONNECT
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED)
+                missing += Manifest.permission.ACCESS_FINE_LOCATION
+        }
+        if (missing.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, missing.toTypedArray(), REQ_BLE)
+        }
     }
 
     override fun onDestroy() {
@@ -60,26 +57,10 @@ class MainActivity : Activity(), SensorEventListener {
         super.onDestroy()
     }
 
-    override fun onSensorChanged(e: SensorEvent) {
-        if (e.sensor.type == Sensor.TYPE_GAME_ROTATION_VECTOR) {
-            SensorManager.getRotationMatrixFromVector(mat, e.values)
-            SensorManager.getOrientation(mat, rot)
-            view.headYaw   = rot[0]
-            view.headPitch = rot[1]
-            // Komplette Rotation als Quaternion-Snapshot für ThreeDofGame.
-            // copyOf() weil Android e.values zwischen Events recycelt.
-            view.rotationVector = e.values.copyOf()
-        }
-    }
-
-    override fun onAccuracyChanged(s: Sensor?, a: Int) = Unit
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_DPAD_UP    -> { view.onUp();    true }
             KeyEvent.KEYCODE_DPAD_DOWN  -> { view.onDown();  true }
-            KeyEvent.KEYCODE_DPAD_LEFT  -> { view.onLeft();  true }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> { view.onRight(); true }
 
             KeyEvent.KEYCODE_DPAD_CENTER,
             KeyEvent.KEYCODE_ENTER,
@@ -90,7 +71,7 @@ class MainActivity : Activity(), SensorEventListener {
             KeyEvent.KEYCODE_BACK,
             KeyEvent.KEYCODE_BUTTON_B,
             KeyEvent.KEYCODE_ESCAPE -> {
-                if (view.onBack()) true else super.onKeyDown(keyCode, event)
+                view.onBack(); true
             }
 
             else -> super.onKeyDown(keyCode, event)
