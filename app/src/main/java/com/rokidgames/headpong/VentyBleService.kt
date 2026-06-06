@@ -53,6 +53,17 @@ class VentyBleService(private val ctx: Context) {
     var stateReceived = false
         private set
 
+    /** True after first state is synced — prevents false session count on connect. */
+    private var firstStateSeen = false
+
+    /** Sessions today — increments each time heater goes OFF→ON. */
+    var sessionsToday = 0
+        private set
+
+    /** Total sessions — persisted across restarts via SharedPreferences. */
+    var totalSessions = 0
+        private set
+
     // ---- BLE internals ----
     private val adapter: BluetoothAdapter?
         get() = (ctx.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
@@ -81,12 +92,33 @@ class VentyBleService(private val ctx: Context) {
         const val MASK_SETTINGS    = 0x80   // 1<<7
     }
 
+    // ---- Persistence ----
+    private fun loadTotalSessions() {
+        val prefs = ctx.getSharedPreferences("venty", Context.MODE_PRIVATE)
+        totalSessions = prefs.getInt("totalSessions", 0)
+        // ST: load only if date matches today
+        val today = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).format(java.util.Date())
+        val savedDate = prefs.getString("stDate", "")
+        sessionsToday = if (savedDate == today) prefs.getInt("sessionsToday", 0) else 0
+    }
+
+    private fun saveSessions() {
+        val prefs = ctx.getSharedPreferences("venty", Context.MODE_PRIVATE)
+        val today = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).format(java.util.Date())
+        prefs.edit()
+            .putInt("totalSessions", totalSessions)
+            .putInt("sessionsToday", sessionsToday)
+            .putString("stDate", today)
+            .apply()
+    }
+
     // ====================================================================
     // Public API
     // ====================================================================
 
     fun connect() {
         try {
+            loadTotalSessions()
             val bt = adapter ?: run { _connState.value = ConnState.DISCONNECTED; return }
             if (!bt.isEnabled) { _connState.value = ConnState.DISCONNECTED; return }
 
@@ -121,6 +153,7 @@ class VentyBleService(private val ctx: Context) {
         stopScan()
         stopSession()
         stateReceived = false
+        firstStateSeen = false
         gatt?.disconnect()
         gatt?.close()
         gatt = null
@@ -320,9 +353,21 @@ class VentyBleService(private val ctx: Context) {
         val permBle    = if (data.size >= 17) (data[16].toInt() and 0x01) != 0 else false
 
         // Session timer: start on heat, reset on standby
+        // Ignore first state to avoid counting device's pre-existing ON state
         val prevMode = _ventyState.value.heaterMode
-        if (heaterMode > 0 && prevMode == 0) startSession()
-        else if (heaterMode == 0) stopSession()
+        if (!firstStateSeen) {
+            firstStateSeen = true
+            if (heaterMode > 0) startSession()
+        } else {
+            if (heaterMode > 0 && prevMode == 0) {
+                startSession()
+                sessionsToday++
+                totalSessions++
+                saveSessions()
+            } else if (heaterMode == 0) {
+                stopSession()
+            }
+        }
 
         _ventyState.value = VentyState(
             targetTempC       = targetRaw / 10.0f,

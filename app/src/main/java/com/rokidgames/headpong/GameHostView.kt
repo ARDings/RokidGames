@@ -66,8 +66,8 @@ class GameHostView(ctx: Context) : View(ctx) {
     // Public API for MainActivity
     // =====================================================================
 
-    fun onUp()    { ventyHud.tempUp() }
-    fun onDown()  { ventyHud.tempDown() }
+    fun onUp()    { ventyHud.tempDown() }
+    fun onDown()  { ventyHud.tempUp() }
     fun onPrimary() {
         if (ventyBle.connState.value == VentyBleService.ConnState.DISCONNECTED)
             ventyBle.connect()

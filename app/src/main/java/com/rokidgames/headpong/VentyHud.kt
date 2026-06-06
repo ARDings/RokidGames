@@ -53,8 +53,8 @@ internal class VentyHud(
         if (now - blinkNs > 500_000_000L) { blink = !blink; blinkNs = now }
     }
 
-    fun tempUp()   { bleService?.adjustTemp(1);  SoundEngine.click() }
-    fun tempDown() { bleService?.adjustTemp(-1); SoundEngine.click() }
+    fun tempUp()   { bleService?.adjustTemp(5);  SoundEngine.click() }
+    fun tempDown() { bleService?.adjustTemp(-5); SoundEngine.click() }
     fun toggleHeat() {
         if (conn == VentyBleService.ConnState.DISCONNECTED) {
             bleService?.connect(); SoundEngine.click()
@@ -83,44 +83,21 @@ internal class VentyHud(
         canvas.drawText(title, (srcW - tb.measureText(title)) / 2f, y, tb)
         y += 16f
 
-        // Data rows — short labels to avoid overlap
         val rh = 13f  // row height
-        dataRow(canvas, y, "T", st.tempDisplay, if (st.heaterMode > 0) hi else lo); y += rh
+        val eff = if (st.effectiveTemp > 0f) "%.0fC".format(st.effectiveTemp) else "--"
+        dataRow(canvas, y, "T", eff, if (st.heaterMode > 0) hi else lo); y += rh
         dataRow(canvas, y, "H", st.heaterLabel, if (st.heaterMode > 0) hi else lo); y += rh
-
-        if (st.heaterMode == 2 && st.boostOffsetC > 0) {
-            dataRow(canvas, y, "BST", "+${st.boostOffsetC}C", hi); y += rh
-        }
-        if (st.heaterMode == 3 && st.superboostOffsetC > 0) {
-            dataRow(canvas, y, "SB", "+${st.superboostOffsetC}C", hi); y += rh
-        }
-
         dataRow(canvas, y, "B", "${st.batteryPercent}%",
             if (st.batteryPercent > 20) hi else lo); y += rh
 
-        if (st.isCharging) {
-            dataRow(canvas, y, "CHG", "ON", hi); y += rh
-        }
-
+        // S only when heating
+        y += rh  // blank line
         if (st.heaterMode > 0) {
             val s = bleService?.sessionSeconds ?: 0L
             dataRow(canvas, y, "S", "%02d:%02d".format(s / 60, s % 60), hi); y += rh
         }
-
-        if (st.autoOffSeconds > 0 && st.heaterMode > 0) {
-            dataRow(canvas, y, "OFF", "${st.autoOffSeconds}s", lo); y += rh
-        }
-
-        // Firmware
-        if (info.firmware != "?.?.?.?") {
-            dataRow(canvas, y, "FW", info.firmware, lo); y += rh
-        }
-        if (info.serial.isNotEmpty()) {
-            dataRow(canvas, y, "SN", info.serial, lo); y += rh
-        }
-        if (info.heaterRuntimeMin > 0) {
-            dataRow(canvas, y, "HT", "%.1fh".format(info.heaterRuntimeHours), lo); y += rh
-        }
+        dataRow(canvas, y, "ST", "${bleService?.sessionsToday ?: 0}", lo); y += rh
+        dataRow(canvas, y, "TS", "${bleService?.totalSessions ?: 0}", lo)
     }
 
     // ====================================================================
