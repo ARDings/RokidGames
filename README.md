@@ -1,6 +1,6 @@
 # Ventylator
 
-A Bluetooth LE HUD for the **Storz & Bickel Venty** vaporizer on **Rokid AR glasses**. Displays live temperature, battery, heater mode, session timer, and session counter — always in your field of view. Green phosphor monochrome, no distractions.
+A Bluetooth LE HUD for the **Storz & Bickel Venty** vaporizer on **Rokid AI Glasses**. Displays live temperature, battery, heater mode, session timer, and session counter — always in your field of view. Green phosphor monochrome, no distractions.
 
 > 📦 Single APK, no Rokid SDK dependency. Just plain Android. `minSdk = 32`.
 
